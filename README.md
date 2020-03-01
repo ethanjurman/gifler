@@ -2,7 +2,9 @@
 Recording gifs with an electron app & ffmpeg
 
 To start recording, start the project with `npm start`
-Then click two points on the screen. This will select the target recording area.
+
+Then click two points on the screen. You can keep clicking to alter the selected recording area. Once you are happy with the selection press the `Enter` key on your keyboard. This will select the target recording area.
+
 Then, when done, focus back on the gifler window. It will stop the recording and your gif will be available as `output.gif`
 
 TODO
