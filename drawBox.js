@@ -14,11 +14,11 @@ const drawBox = e => {
     return null;
   }
 
-  const x = e.screenX;
-  const y = e.screenY;
+  const x = e.clientX;
+  const y = e.clientY;
 
   ipcRenderer.send('message', { x, y });
-  const box = document.getElementById('whiteBox');
+
   boxCoor[index] = { x, y };
   index = index === 0 ? 1 : 0;
 
@@ -27,20 +27,36 @@ const drawBox = e => {
     const width = Math.abs(boxCoor[0].x - boxCoor[1].x);
     const height = Math.abs(boxCoor[0].y - boxCoor[1].y);
     const left = Math.min(boxCoor[0].x, boxCoor[1].x);
+    const right = Math.max(boxCoor[0].x, boxCoor[1].x);
     const top = Math.min(boxCoor[0].y, boxCoor[1].y);
-    const positionStyle = 'absolute';
-    const backgroundStyle = 'rgba(255,255,255,0.2)';
+    const bottom = Math.max(boxCoor[0].y, boxCoor[1].y);
+    const box = document.getElementById('whiteBox');
     box.setAttribute(
       'style',
       `
-        position: ${positionStyle};
-        background: ${backgroundStyle};
         width:${width}px;
         height:${height}px;
         left:${left}px;
         top:${top}px;
     `,
     );
+    console.log({ top, left, right, bottom });
+    const boxTop = document.getElementById('darkBoxTop');
+    boxTop.setAttribute('style', `bottom: ${window.innerHeight - top}px`);
+    const boxLeft = document.getElementById('darkBoxLeft');
+    boxLeft.setAttribute(
+      'style',
+      `right: ${window.innerWidth -
+        left}px; top: ${top}px; bottom: ${window.innerHeight - bottom}px`,
+    );
+    const boxRight = document.getElementById('darkBoxRight');
+    boxRight.setAttribute(
+      'style',
+      `left: ${right}px; top: ${top}px; bottom: ${window.innerHeight -
+        bottom}px`,
+    );
+    const boxBottom = document.getElementById('darkBoxBottom');
+    boxBottom.setAttribute('style', `top: ${bottom}px`);
   }
 };
 

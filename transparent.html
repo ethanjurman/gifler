@@ -4,18 +4,42 @@
     <script src="drawBox.js"></script>
     <style>
       html,
-      body,
-      * {
+      body {
         height: 100%;
-        background: rgba(0, 0, 0, 0.2);
+        /* background: rgba(0, 0, 0, 0); */
         margin: 0px;
+      }
+      .darkBox {
+        background: rgba(0, 0, 0, 0.5);
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        left: 0px;
+        bottom: 0px;
       }
     </style>
   </head>
   <body id="clickArea">
     <div
-      id="whiteBox"
-      style="position: absolute; background: rgba(255,255,255,0.2)"
+      id="darkBoxTop"
+      class="darkBox"
+      style="background: rgba(0, 0, 0, 0.125);"
     ></div>
+    <div
+      id="darkBoxLeft"
+      class="darkBox"
+      style="background: rgba(0, 0, 0, 0.125);"
+    ></div>
+    <div
+      id="darkBoxRight"
+      class="darkBox"
+      style="background: rgba(0, 0, 0, 0.125);"
+    ></div>
+    <div
+      id="darkBoxBottom"
+      class="darkBox"
+      style="background: rgba(0, 0, 0, 0.125);"
+    ></div>
+    <div id="whiteBox"></div>
   </body>
 </html>
