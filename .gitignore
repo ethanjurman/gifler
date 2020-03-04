@@ -103,5 +103,7 @@ dist
 # TernJS port file
 .tern-port
 
-# output gif
-output.gif
+# output files
+*.gif
+*.mkv
+*.png
