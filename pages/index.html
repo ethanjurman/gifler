@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <title>Gifler</title>
+  <script src="mainPage.js"></script>
+  <style>
+    @keyframes spin {
+      0% {
+        transform: rotateZ(0);
+      }
+      100% {
+        transform: rotateZ(360deg);
+      }
+    }
+    #loading {
+      border-radius: 100%;
+      width: 100px;
+      height: 100px;
+      border: 10px solid rgba(0, 0, 0, 0);
+      margin: 10px;
+      border-top-color: black;
+      animation: spin 3s linear infinite;
+    }
+  </style>
+  <body>
+    <div>
+      <button id="captureButton">Start Recording</button>
+    </div>
+    <video id="video" src="../output.mkv" loop="true" autoplay="true"></video>
+    <div>
+      <input type="text" id="startTime" value="0" />
+      <input type="text" id="endTime" />
+    </div>
+    <button id="save">Save GIF</button>
+    <div id="loading" style="display:none" />
+  </body>
+</html>

@@ -1,10 +1,12 @@
 const os = require('os');
-const { app, BrowserWindow, screen, ipcMain } = require('electron');
+const { app, BrowserWindow, screen, ipcMain, dialog } = require('electron');
 const { execSync, exec } = require('child_process');
 const ffmpeg = require('ffmpeg-static-electron');
 
+let mainWindow;
 let drawWindow;
 let dpiScale = 1;
+let filename = 'output';
 
 const makeTransparentWindow = () => {
   const screenWindow = screen.getPrimaryDisplay().workAreaSize;
@@ -19,7 +21,7 @@ const makeTransparentWindow = () => {
     frame: false,
     show: false,
   });
-  transparentWindow.loadFile('./transparent.html');
+  transparentWindow.loadFile('./pages/transparent.html');
   // transparentWindow.setAlwaysOnTop(true);
   transparentWindow.setResizable(false);
   // transparentWindow.setIgnoreMouseEvents(true);
@@ -28,25 +30,30 @@ const makeTransparentWindow = () => {
 };
 
 const createWindow = () => {
-  // create browser window
-  const window = new BrowserWindow({
-    width: 800,
+  mainWindow = new BrowserWindow({
+    width: 1200,
     height: 600,
-    show: false,
+    show: true,
     webPreferences: {
       nodeIntegration: true,
     },
   });
-
-  // and load the index.html file
-  window.loadFile('./index.html');
+  mainWindow.loadFile('./pages/index.html');
 
   // Open DevTools
-  // window.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
+};
+
+ipcMain.on('OPEN_CAPTURE_WINDOW', () => {
   const transparentWindow = makeTransparentWindow();
   transparentWindow.show();
-  // transparentWindow.webContents.openDevTools();
-};
+  mainWindow.hide();
+});
+
+ipcMain.on('UPDATE_FILE_NAME', (__message, value) => {
+  console.log({ value });
+  filename = value;
+});
 
 app
   .whenReady()
@@ -54,10 +61,6 @@ app
   .catch(err => {
     console.error(err);
   });
-
-ipcMain.on('message', (event, arg) => {
-  console.log({ arg });
-});
 
 let ffmpegProcess;
 
@@ -67,40 +70,38 @@ const logError = (error, stdout, stderr) => {
   }
 };
 
-const stopRecording = () => {
+const STOP_RECORDING = () => {
   console.log('STOP RECORDING');
+  drawWindow.minimize();
   ffmpegProcess.stdin.write('q');
+  mainWindow.show();
+};
 
+ipcMain.on('SAVE_GIF', (event, { startTime, endTime }) => {
+  console.log('SAVE GIF');
   const FPS = 24;
   const SCALE = 1080;
-  const filepath = 'output.mkv';
+  const videoFilepath = `${filename}.mkv`;
 
   // create palette
   const palatte = execSync(
-    `${ffmpeg.path} -y -i ${filepath} -vf "fps=${FPS}, scale=${SCALE}:-1:flags=lanczos,palettegen" palette.png`,
+    `${ffmpeg.path} -y -i ${videoFilepath} -vf "fps=${FPS}, scale=${SCALE}:-1:flags=lanczos,palettegen" palette.png`,
     logError,
   );
   const gif = execSync(
-    `${ffmpeg.path} -y -i ${filepath} -i palette.png -q 0 -filter_complex "fps=${FPS},scale=${SCALE}:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle" ${filepath}.gif`,
+    `${ffmpeg.path} -y -i ${videoFilepath} -i palette.png -q 0 -filter_complex "fps=${FPS},scale=${SCALE}:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle" ${filename}.gif`,
     logError,
   );
-
-  app.quit();
-};
+  console.log('SAVE GIF FINISHED');
+  event.reply('SAVE_GIF_DONE');
+});
 
 ipcMain.on(
-  'startRecording',
+  'START_RECORDING',
   (__event, { x, y, width, height, clientScreenDifX, clientScreenDifY }) => {
-    console.log('START RECORDING', {
-      x,
-      y,
-      width,
-      height,
-      clientScreenDifX,
-      clientScreenDifY,
-    });
+    console.log('START RECORDING');
     drawWindow.minimize();
-    const outputFile = 'output.mkv';
+    const outputFile = `${filename}.mkv`;
 
     const xValue = Math.floor((x - clientScreenDifX) * dpiScale);
     const yValue = Math.floor((y - clientScreenDifY) * dpiScale);
@@ -123,8 +124,8 @@ ipcMain.on(
     }
     // TODO SUPPORT OTHER SYSTEMS
 
-    drawWindow.on('focus', stopRecording);
+    drawWindow.on('focus', STOP_RECORDING);
   },
 );
 
-ipcMain.on('stopRecording', stopRecording);
+ipcMain.on('STOP_RECORDING', STOP_RECORDING);
