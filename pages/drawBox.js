@@ -66,14 +66,11 @@ const drawBox = e => {
 
 const handleKeyPress = evt => {
   if (evt.code === 'Enter') {
-    START_RECORDING();
-  }
-  if (evt.code === 'Escape') {
-    STOP_RECORDING();
+    startRecording();
   }
 };
 
-const START_RECORDING = () => {
+const startRecording = () => {
   const width = Math.abs(boxCoor[0].x - boxCoor[1].x);
   const height = Math.abs(boxCoor[0].y - boxCoor[1].y);
   const x = Math.min(boxCoor[0].x, boxCoor[1].x);
@@ -93,10 +90,6 @@ const START_RECORDING = () => {
     box.setAttribute('style', 'background: rgba(0,0,0,0)');
   });
   state = RECORDING;
-};
-
-const STOP_RECORDING = () => {
-  ipcRenderer.send('STOP_RECORDING');
 };
 
 document.addEventListener('DOMContentLoaded', () => {

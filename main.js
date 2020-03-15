@@ -70,18 +70,32 @@ const logError = (error, stdout, stderr) => {
   }
 };
 
-const STOP_RECORDING = () => {
+const stopRecording = () => {
   console.log('STOP RECORDING');
   drawWindow.minimize();
   ffmpegProcess.stdin.write('q');
   mainWindow.show();
 };
 
-ipcMain.on('SAVE_GIF', (event, { startTime, endTime }) => {
-  console.log('SAVE GIF');
+ipcMain.on('SAVE_GIF', async (event, { startTime, endTime }) => {
+  console.log('save gif');
   const FPS = 24;
   const SCALE = 1080;
   const videoFilepath = `${filename}.mkv`;
+
+  const { filePath } = await dialog.showSaveDialog(mainWindow, {
+    title: 'Save Gif',
+    filters: [{ name: 'Gif', extensions: ['gif'] }],
+  });
+
+  if (!filePath) {
+    console.log('no file path');
+    event.reply('SAVE_GIF_DONE');
+    return null;
+  }
+
+  const duration = endTime - startTime;
+  console.log({ startTime, endTime, duration });
 
   // create palette
   const palatte = execSync(
@@ -89,10 +103,10 @@ ipcMain.on('SAVE_GIF', (event, { startTime, endTime }) => {
     logError,
   );
   const gif = execSync(
-    `${ffmpeg.path} -y -i ${videoFilepath} -i palette.png -q 0 -filter_complex "fps=${FPS},scale=${SCALE}:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle" ${filename}.gif`,
+    `${ffmpeg.path} -y -ss ${startTime} -i ${videoFilepath} -i palette.png -q 0 -filter_complex "fps=${FPS},scale=${SCALE}:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle" -t ${duration} ${filePath}`,
     logError,
   );
-  console.log('SAVE GIF FINISHED');
+  console.log('save gif finished');
   event.reply('SAVE_GIF_DONE');
 });
 
@@ -124,8 +138,6 @@ ipcMain.on(
     }
     // TODO SUPPORT OTHER SYSTEMS
 
-    drawWindow.on('focus', STOP_RECORDING);
+    drawWindow.on('focus', stopRecording);
   },
 );
-
-ipcMain.on('STOP_RECORDING', STOP_RECORDING);
