@@ -16,21 +16,80 @@
       width: 100px;
       height: 100px;
       border: 10px solid rgba(0, 0, 0, 0);
-      margin: 10px;
       border-top-color: black;
       animation: spin 3s linear infinite;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      margin-top: -50px;
+      margin-left: -50px;
+      box-shadow: 0px 0px 400px black, 0px 0px 20px black;
+    }
+    #loadingBackground {
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      bottom: 0px;
+      background: #b38888aa;
+    }
+    #video {
+      width: 100%;
+    }
+    #timeStrip {
+      height: 1px;
+      background: #bbbbbb;
+      margin: 20px;
+    }
+    #playTime {
+      background: #90bbff;
+      height: 2px;
+      margin-left: 0px;
+    }
+    #played {
+      background: #666f7a;
+      width: 0px;
+      height: 2px;
+      margin-left: 0px;
+    }
+    .cursor {
+      height: 10px;
+      width: 10px;
+      border-radius: 100%;
+      background: #777777;
+      margin: -5px;
+      position: absolute;
+    }
+    #endTimeCursor {
+      right: 20px;
+    }
+    .timeInput {
+      background: #cccccc;
+      border-radius: 4px;
+      border: 1px solid #aaaaaa;
     }
   </style>
   <body>
     <div>
       <button id="captureButton">Start Recording</button>
     </div>
-    <video id="video" src="../output.mkv" loop="true" autoplay="true"></video>
+    <div id="loadingBackground" style="display:none">
+      <div id="loading"></div>
+    </div>
+    <video id="video" src="../output.mkv" autoplay="true"></video>
+
+    <div id="timeStrip">
+      <div id="startTimeCursor" class="cursor"></div>
+      <div id="playTime">
+        <div id="played"></div>
+      </div>
+      <div id="endTimeCursor" class="cursor"></div>
+    </div>
+
     <div>
-      <input type="text" id="startTime" value="0" />
-      <input type="text" id="endTime" />
+      <input type="text" id="startTime" class="timeInput" value="0" readonly />
+      <input type="text" id="endTime" class="timeInput" readonly />
     </div>
     <button id="save">Save GIF</button>
-    <div id="loading" style="display:none" />
   </body>
 </html>

@@ -70,11 +70,13 @@ const logError = (error, stdout, stderr) => {
   }
 };
 
-const stopRecording = () => {
+const stopRecording = ipcEvent => () => {
   console.log('STOP RECORDING');
-  drawWindow.minimize();
+  drawWindow.hide();
   ffmpegProcess.stdin.write('q');
+  mainWindow.reload();
   mainWindow.show();
+  setTimeout(() => mainWindow.webContents.send('LOAD_VIDEO'), 1000);
 };
 
 ipcMain.on('SAVE_GIF', async (event, { startTime, endTime }) => {
@@ -94,16 +96,22 @@ ipcMain.on('SAVE_GIF', async (event, { startTime, endTime }) => {
     return null;
   }
 
+  console.log('saving to', filePath);
+
   const duration = endTime - startTime;
-  console.log({ startTime, endTime, duration });
+
+  console.log('palatte generation');
 
   // create palette
   const palatte = execSync(
-    `${ffmpeg.path} -y -i ${videoFilepath} -vf "fps=${FPS}, scale=${SCALE}:-1:flags=lanczos,palettegen" palette.png`,
+    `${ffmpeg.path} -y -ss ${startTime} -t ${duration} -i ${videoFilepath} -vf "fps=${FPS}, scale=${SCALE}:-1:flags=lanczos,palettegen" palette.png`,
     logError,
   );
+
+  console.log('gif creation');
+
   const gif = execSync(
-    `${ffmpeg.path} -y -ss ${startTime} -i ${videoFilepath} -i palette.png -q 0 -filter_complex "fps=${FPS},scale=${SCALE}:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle" -t ${duration} ${filePath}`,
+    `${ffmpeg.path} -y -ss ${startTime} -t ${duration} -i ${videoFilepath} -i palette.png -q 0 -filter_complex "fps=${FPS},scale=${SCALE}:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle" ${filePath}`,
     logError,
   );
   console.log('save gif finished');
@@ -112,7 +120,7 @@ ipcMain.on('SAVE_GIF', async (event, { startTime, endTime }) => {
 
 ipcMain.on(
   'START_RECORDING',
-  (__event, { x, y, width, height, clientScreenDifX, clientScreenDifY }) => {
+  (event, { x, y, width, height, clientScreenDifX, clientScreenDifY }) => {
     console.log('START RECORDING');
     drawWindow.minimize();
     const outputFile = `${filename}.mkv`;
@@ -138,6 +146,6 @@ ipcMain.on(
     }
     // TODO SUPPORT OTHER SYSTEMS
 
-    drawWindow.on('focus', stopRecording);
+    drawWindow.on('focus', stopRecording(event));
   },
 );

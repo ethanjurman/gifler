@@ -44,7 +44,6 @@ const drawBox = e => {
         top:${top}px;
     `,
     );
-    console.log({ top, left, right, bottom });
     const boxTop = document.getElementById('darkBoxTop');
     boxTop.setAttribute('style', `bottom: ${window.innerHeight - top}px`);
     const boxLeft = document.getElementById('darkBoxLeft');
