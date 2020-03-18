@@ -4,7 +4,6 @@ const RECORDING = 'RECORDING';
 const NOT_RECORDING = 'NOT_RECORDING';
 
 const boxCoor = [];
-let index = 0;
 let state = NOT_RECORDING;
 
 let clientScreenDifX = 0;
@@ -69,14 +68,20 @@ const drawBox = (e, index) => {
     const boxLeft = document.getElementById('darkBoxLeft');
     boxLeft.setAttribute(
       'style',
-      `right: ${window.innerWidth -
-        left}px; top: ${top}px; bottom: ${window.innerHeight - bottom}px`,
+      `
+        right: ${window.innerWidth - left}px; 
+        top: ${top}px; 
+        bottom: ${window.innerHeight - bottom}px
+      `,
     );
     const boxRight = document.getElementById('darkBoxRight');
     boxRight.setAttribute(
       'style',
-      `left: ${right}px; top: ${top}px; bottom: ${window.innerHeight -
-        bottom}px`,
+      `
+        left: ${right}px; 
+        top: ${top}px; 
+        bottom: ${window.innerHeight - bottom}px
+      `,
     );
     const boxBottom = document.getElementById('darkBoxBottom');
     boxBottom.setAttribute('style', `top: ${bottom}px`);
@@ -121,8 +126,5 @@ const handleKeyPress = evt => {
 document.addEventListener('DOMContentLoaded', () => {
   const clickArea = document.getElementById('clickArea');
   clickArea.onmousedown = handleMouseDown;
-  // clickArea.addEventListener('mousedown', handleMouseDown);
-  // clickArea.addEventListener('mousemove', handleMouseMove);
-  // clickArea.addEventListener('mouseup', handleMouseUp);
   clickArea.addEventListener('keydown', handleKeyPress);
 });
