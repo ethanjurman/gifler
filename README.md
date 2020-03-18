@@ -13,7 +13,7 @@ TODO
 - [x] Look into why when recording it seems offset (might be a display / ffmpeg / click point issue)
   - seems to be an issue with dpi support, should be able to grab the screen scale factor but might require testing to see that the mouse is being drawn correctly (at least on windows).
 - [x] Use better ffmpeg script for converting file into high res small file gif
-- [ ] Output to a better file location
+- [x] Output to a better file location
 - [ ] Allow for different configuration (framerate)
 - [ ] Ensure that ffmpeg capture ability works on other systems (OS X, linux?)
   - [x] OSX
