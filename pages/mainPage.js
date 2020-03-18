@@ -1,6 +1,20 @@
 const { ipcRenderer } = require('electron');
 
-const handleOPEN_CAPTURE_WINDOW = () => {
+const setLoadingTrue = () => {
+  const loading = document.getElementById('loadingBackground');
+  loading.setAttribute('style', '');
+};
+
+const setLoadingFalse = () => {
+  const loading = document.getElementById('loadingBackground');
+  loading.setAttribute('style', 'display: none;');
+};
+
+ipcRenderer.on('SET_LOADING', (__event, status) => {
+  status ? setLoadingTrue() : setLoadingFalse();
+});
+
+const handleStartRecordin = () => {
   ipcRenderer.send('OPEN_CAPTURE_WINDOW');
 };
 
@@ -42,15 +56,19 @@ const handleLoadData = () => {
 const handleSaveGif = () => {
   const startTime = document.getElementById('startTime').value;
   const endTime = document.getElementById('endTime').value;
-  const loading = document.getElementById('loadingBackground');
-  loading.setAttribute('style', '');
+  setLoadingTrue();
   ipcRenderer.send('SAVE_GIF', { startTime, endTime });
 };
 
-ipcRenderer.on('SAVE_GIF_DONE', () => {
-  const loading = document.getElementById('loadingBackground');
-  loading.setAttribute('style', 'display:none');
+const handleClearFile = () => {
+  ipcRenderer.send('CLEAR_FILE');
+};
+
+ipcRenderer.on('CLEAR_FILE_SUCCESS', () => {
+  location.reload();
 });
+
+ipcRenderer.on('SAVE_GIF_DONE', setLoadingFalse);
 
 const setPlayTime = ({ newStartTime, newEndTime }) => {
   const startTimeInput = document.getElementById('startTime');
@@ -163,33 +181,28 @@ const handleChangeEndTimeStart = () => {
 };
 
 ipcRenderer.on('LOAD_VIDEO', () => {
-  const endTimeInput = document.getElementById('endTime');
   const video = document.getElementById('video');
-  video.setAttribute('src', '../output.mkv');
+  setLoadingTrue();
   attemptToLoadVideo = setInterval(() => {
     if (video.duration && video.duration !== Infinity) {
-      console.log(video.duration);
-      setTimeout(() => location.reload(), 1000);
-    } else {
-      video.load();
+      clearInterval(attemptToLoadVideo);
+      location.reload();
     }
   }, 1000);
 });
 
-// setInterval(() => {
-//   // check if new video avaiable
-//   video.load();
-// }, 2000);
-
 document.addEventListener('DOMContentLoaded', () => {
   const captureButton = document.getElementById('captureButton');
-  captureButton.addEventListener('click', handleOPEN_CAPTURE_WINDOW);
+  const clearFileButton = document.getElementById('clearFileButton');
   const video = document.getElementById('video');
-  video.addEventListener('loadedmetadata', handleLoadData);
   const saveButton = document.getElementById('save');
-  saveButton.addEventListener('click', handleSaveGif);
   const startCursor = document.getElementById('startTimeCursor');
-  startCursor.addEventListener('mousedown', handleChangeStartTimeStart);
   const endCursor = document.getElementById('endTimeCursor');
+
+  captureButton.addEventListener('click', handleStartRecordin);
+  clearFileButton.addEventListener('click', handleClearFile);
+  video.addEventListener('loadedmetadata', handleLoadData);
+  saveButton.addEventListener('click', handleSaveGif);
+  startCursor.addEventListener('mousedown', handleChangeStartTimeStart);
   endCursor.addEventListener('mousedown', handleChangeEndTimeStart);
 });

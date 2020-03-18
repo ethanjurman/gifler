@@ -10,7 +10,28 @@ let state = NOT_RECORDING;
 let clientScreenDifX = 0;
 let clientScreenDifY = 0;
 
-const drawBox = e => {
+const handleMouseDown = event => {
+  const clickArea = document.getElementById('clickArea');
+  boxCoor.length = 0;
+  drawBox(event, 0);
+  clickArea.onmousemove = handleMouseMove;
+  clickArea.onmouseup = handleMouseUp;
+};
+
+const handleMouseMove = event => {
+  drawBox(event, 1);
+};
+
+const handleMouseUp = event => {
+  const clickArea = document.getElementById('clickArea');
+  drawBox(event, 1);
+  clickArea.onmousemove = null;
+  clickArea.onmouseup = null;
+};
+
+const drawBox = (e, index) => {
+  // e - event data
+  // index - 0 if first, 1 if last
   if (state === RECORDING) {
     return null;
   }
@@ -24,7 +45,6 @@ const drawBox = e => {
   ipcRenderer.send('message', { x, y });
 
   boxCoor[index] = { x, y };
-  index = index === 0 ? 1 : 0;
 
   // build box
   if (boxCoor.length === 2) {
@@ -63,12 +83,6 @@ const drawBox = e => {
   }
 };
 
-const handleKeyPress = evt => {
-  if (evt.code === 'Enter') {
-    startRecording();
-  }
-};
-
 const startRecording = () => {
   const width = Math.abs(boxCoor[0].x - boxCoor[1].x);
   const height = Math.abs(boxCoor[0].y - boxCoor[1].y);
@@ -91,8 +105,24 @@ const startRecording = () => {
   state = RECORDING;
 };
 
+const cancelRecording = () => {
+  ipcRenderer.send('CANCEL_RECORDING');
+};
+
+const handleKeyPress = evt => {
+  if (evt.code === 'Enter') {
+    startRecording();
+  }
+  if (evt.code === 'Escape') {
+    cancelRecording();
+  }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   const clickArea = document.getElementById('clickArea');
-  clickArea.addEventListener('click', drawBox);
+  clickArea.onmousedown = handleMouseDown;
+  // clickArea.addEventListener('mousedown', handleMouseDown);
+  // clickArea.addEventListener('mousemove', handleMouseMove);
+  // clickArea.addEventListener('mouseup', handleMouseUp);
   clickArea.addEventListener('keydown', handleKeyPress);
 });

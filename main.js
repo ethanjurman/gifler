@@ -2,6 +2,7 @@ const os = require('os');
 const { app, BrowserWindow, screen, ipcMain, dialog } = require('electron');
 const { execSync, exec } = require('child_process');
 const ffmpeg = require('ffmpeg-static-electron');
+const fs = require('fs');
 
 let mainWindow;
 let drawWindow;
@@ -22,9 +23,10 @@ const makeTransparentWindow = () => {
     show: false,
   });
   transparentWindow.loadFile('./pages/transparent.html');
-  // transparentWindow.setAlwaysOnTop(true);
   transparentWindow.setResizable(false);
-  // transparentWindow.setIgnoreMouseEvents(true);
+
+  // transparentWindow.webContents.openDevTools();
+
   drawWindow = transparentWindow;
   return transparentWindow;
 };
@@ -74,10 +76,17 @@ const stopRecording = ipcEvent => () => {
   console.log('STOP RECORDING');
   drawWindow.hide();
   ffmpegProcess.stdin.write('q');
-  mainWindow.reload();
+  mainWindow.webContents.send('SET_LOADING', true);
   mainWindow.show();
   setTimeout(() => mainWindow.webContents.send('LOAD_VIDEO'), 1000);
+  mainWindow.webContents.send('SET_LOADING', false);
 };
+
+ipcMain.on('CANCEL_RECORDING', () => {
+  console.log('STOP RECORDING');
+  drawWindow.hide();
+  mainWindow.show();
+});
 
 ipcMain.on('SAVE_GIF', async (event, { startTime, endTime }) => {
   console.log('save gif');
@@ -149,3 +158,12 @@ ipcMain.on(
     drawWindow.on('focus', stopRecording(event));
   },
 );
+
+ipcMain.on('CLEAR_FILE', event => {
+  fs.unlink(`${filename}.mkv`, err => {
+    if (err) {
+      console.error(err);
+    }
+    event.reply('CLEAR_FILE_SUCCESS');
+  });
+});
