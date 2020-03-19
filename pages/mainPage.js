@@ -1,5 +1,7 @@
 const { ipcRenderer } = require('electron');
 
+let videoPlayLoop;
+
 const setLoadingTrue = () => {
   const loading = document.getElementById('loadingBackground');
   loading.setAttribute('style', '');
@@ -32,7 +34,7 @@ const handleTimeChange = () => {
   };
   const width = newTimeToPercentage(video.currentTime);
   playedStrip.setAttribute('style', `width: ${width}%`);
-  if (video.currentTime > endTime) {
+  if (!video.paused && video.currentTime >= endTime) {
     video.currentTime = startTime;
   }
 };
@@ -46,8 +48,10 @@ const handleVideoEnd = () => {
 
 const handleLoadData = () => {
   const video = document.getElementById('video');
-  // video.addEventListener('timeupdate', handleTimeChange);
-  setInterval(handleTimeChange, 10);
+  if (videoPlayLoop) {
+    clearInterval(videoPlayLoop);
+  }
+  videoPlayLoop = setInterval(handleTimeChange, 0);
   video.addEventListener('ended', handleVideoEnd);
   const endTime = document.getElementById('endTime');
   endTime.value = video.duration;
@@ -104,6 +108,7 @@ const setPlayTime = ({ newStartTime, newEndTime }) => {
 
 const handleChangeStartTimeStart = () => {
   const video = document.getElementById('video');
+  video.pause();
   const startCursor = document.getElementById('startTimeCursor');
 
   const outerMargin = 28;
@@ -135,6 +140,7 @@ const handleChangeStartTimeStart = () => {
     setPlayTime({ newStartTime });
   };
   document.onmouseup = () => {
+    video.play();
     // stop changing start time
     document.onmousemove = null;
     document.onmouseup = null;
@@ -143,6 +149,7 @@ const handleChangeStartTimeStart = () => {
 
 const handleChangeEndTimeStart = () => {
   const video = document.getElementById('video');
+  video.pause();
   const endCursor = document.getElementById('endTimeCursor');
 
   const outerMargin = 28;
@@ -174,6 +181,7 @@ const handleChangeEndTimeStart = () => {
     setPlayTime({ newEndTime });
   };
   document.onmouseup = () => {
+    video.play();
     // stop changing end time
     document.onmousemove = null;
     document.onmouseup = null;
